@@ -2,12 +2,61 @@
 var SVGButton, root;
 
 SVGButton = (function() {
+  var merge, typeIsArray;
+
   function SVGButton(parent) {
     this.parent = parent;
+    this.rectDefaults = {
+      width: 30,
+      height: 30,
+      rx: 5,
+      ry: 5,
+      'stroke-width': 2,
+      stroke: 'grey',
+      fill: 'none'
+    };
+    this.textDefaults = {
+      stroke: 'grey',
+      fill: 'none',
+      'font-family': 'sans-serif',
+      fill: 'grey',
+      'font-size': 14
+    };
+    this.pathDefaults = {
+      width: 30,
+      height: 30,
+      rx: 5,
+      ry: 5,
+      'stroke-width': 2,
+      stroke: 'grey',
+      fill: 'none'
+    };
   }
 
-  SVGButton.prototype.updateFill = function(id, fill) {
-    return d3.select('#' + id).style("fill", fill);
+  typeIsArray = Array.isArray || function(value) {
+    return {}.toString.call(value) === '[object Array]';
+  };
+
+  merge = function(defaults, opts) {
+    var key, result, value;
+    result = {};
+    for (key in defaults) {
+      value = defaults[key];
+      if (value === Object(value)) {
+        if (opts[key] != null) {
+          result[key] = merge(value, opts[key]);
+        } else {
+          result[key] = value;
+        }
+      } else {
+        if (opts[key] != null) {
+          result[key] = opts[key];
+        } else {
+          result[key] = value;
+        }
+      }
+    }
+    return result;
   };
 
   SVGButton.prototype.addButtonBehaviours = function(elem, hoverfill, unhoverfill, action) {
@@ -15,76 +64,84 @@ SVGButton = (function() {
   };
 
   SVGButton.prototype.addButtonBehavioursForId = function(elem, id, hoverfill, unhoverfill, action) {
-    return elem.attr("onmouseover", "updateFill(" + id + ",'" + hoverfill + "')").attr("onmouseout", "updateFill(" + id + ",'" + unhoverfill + "')").attr("onmouseup", action).attr("ontouchend", "updateFill(" + id + ",'" + unhoverfill + "')");
+    return elem.attr("onmouseover", "d3.select('#" + id + "').style('fill','" + hoverfill + "')").attr("onmouseout", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')").attr("onmouseup", action).attr("ontouchend", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')");
   };
 
-  SVGButton.prototype.createRect = function(id, x, y, action, opt) {
-    var key, rect, val, _ref, _results;
+  SVGButton.prototype.createRect = function(id, x, y, action, opts) {
+    var key, rect, val, _ref;
     rect = d3.select(this.parent).append("rect").attr("id", id).attr("x", x).attr("y", y);
-    this.addButtonBehaviours(rect, opt.hover, opt.rect.fill, action);
-    _ref = opt.rect;
-    _results = [];
+    this.addButtonBehaviours(rect, opts.hover, opts.rect.fill, action);
+    _ref = opts.rect;
     for (key in _ref) {
       val = _ref[key];
-      _results.push(rect.attr(key, val));
+      rect.attr(key, val);
     }
-    return _results;
+    return rect;
   };
 
-  SVGButton.prototype.makeTextButton = function(id, x, y, text, action) {
-    var elem, rect;
-    rect = this.createRect(id, x, y, action, opt);
-    elem = d3.select(this.parent).append("text").attr("id", id + "text").attr("x", x + 2).attr("y", y + 2);
-    return this.addButtonBehavioursForId(elem, id, 'lightgrey', 'none', action);
-  };
-
-  SVGButton.prototype.makeButton = function(id, x, y, action, options) {
-    if (options == null) {
-      options = {
-        rect: {
-          width: 30,
-          height: 30,
-          rx: 5,
-          ry: 5,
-          'stroke-width': 2,
-          stroke: 'grey',
-          fill: 'none'
-        },
-        hover: 'lightgrey'
-      };
+  SVGButton.prototype.createText = function(id, x, y, text, action, opts) {
+    var elem, key, val, _ref;
+    elem = d3.select(this.parent).append("text").text(text).attr("id", id).attr("x", x).attr("y", y);
+    this.addButtonBehaviours(elem, opts.hover, opts.text.fill, action);
+    _ref = opts.text;
+    for (key in _ref) {
+      val = _ref[key];
+      elem.attr(key, val);
     }
-    return this.createRect(id, x, y, action, options);
+    return elem;
   };
 
+  SVGButton.prototype.createPath = function(id, x, y, path, opts) {
+    var elem, key, val, _ref;
+    elem = d3.select(this.parent).append("path").attr("d", path).attr("transform", "translate(" + x + "," + y + ")").attr("id", id);
+    _ref = opts.path;
+    for (key in _ref) {
+      val = _ref[key];
+      elem.attr(key, val);
+    }
+    return elem;
+  };
 
-  /*
-  drawPauseButton: (id, x, y) ->
-      @drawButton(id, "action", x, y, "doAction()");
-      d3.select(id).append("path")
-          .attr("id","pause").attr("fill","grey").attr("onmouseover","fillButton('action','none')")
-          .attr("d","M#{x+7} #{y+6}L#{x+7} #{y+24}L#{x+13} #{y+24}L#{x+13} #{y+6} L#{x+7} #{y+6} M#{x+17} #{y+6} L#{x+17} #{y+24} L#{x+23} #{y+24} L#{x+23} #{y+6} L#{x+17} #{y+6}")
-          .attr("onmouseover","fillButton('action','lightgrey')").attr("onmouseout","fillButton('action','none')")
-          .attr("onmouseup","doAction()").attr("ontouchend","fillButton('action','none')")
-      d3.select(id).append("path")
-          .attr("id","resume").attr("fill","grey").attr("onmouseover","fillButton('action','none')")
-          .attr("class","invisible").attr("d","M#{x+11} #{y+6} L#{x+21} #{y+15} L#{x+11} #{y+22} Z")
-          .attr("onmouseover","fillButton('action','lightgrey')").attr("onmouseout","fillButton('action','none')")
-          .attr("onmouseup","doAction()").attr("ontouchend","fillButton('action','none')")
-  
-  drawRestartButton: (id, x, y) ->
-      @drawButton(id, "restart", x, y, "track.clear()");
-      d3.select(id).append("path")
-          .attr("fill","none").attr("stroke","grey").attr("stroke-width",5)
-          .attr("onmouseover","fillButton('action','none')")
-          .attr("d","M #{x+23} #{y+15} a 8 8 0 1 1 -8 -8")
-          .attr("onmouseover","fillButton('restart','lightgrey')").attr("onmouseout","fillButton('restart','none')")
-          .attr("onmouseup","track.clear()").attr("ontouchend","fillButton('restart','none')")
-      d3.select(id).append("path")
-          .attr("fill","grey").attr("onmouseover","fillButton('action','none')")
-          .attr("d","M#{x+15} #{y+2} L#{x+21} #{y+7} L#{x+15} #{y+12} Z")
-          .attr("onmouseover","fillButton('restart','lightgrey')").attr("onmouseout","fillButton('restart','none')")
-          .attr("onmouseup","track.clear()").attr("ontouchend","fillButton('restart','none')")
-   */
+  SVGButton.prototype.makeTextButton = function(id, x, y, text, action, opts) {
+    var elem, mergedOpts;
+    if (opts == null) {
+      opts = {};
+    }
+    mergedOpts = merge({
+      rect: this.rectDefaults,
+      text: this.textDefaults,
+      hover: 'lightgrey'
+    }, opts);
+    elem = this.createText(id + "text", x + 2, y + 2, text, action, mergedOpts);
+    return console.log(elem);
+  };
+
+  SVGButton.prototype.makeButton = function(id, x, y, action, opts) {
+    var mergedOpts;
+    if (opts == null) {
+      opts = {};
+    }
+    mergedOpts = merge({
+      rect: this.rectDefaults,
+      hover: 'lightgrey'
+    }, opts);
+    return this.createRect(id, x, y, action, mergedOpts);
+  };
+
+  SVGButton.prototype.makePathButton = function(id, x, y, path, action, opts) {
+    var elem, mergedOpts;
+    if (opts == null) {
+      opts = {};
+    }
+    mergedOpts = merge({
+      rect: this.rectDefaults,
+      path: this.pathDefaults,
+      hover: 'lightgrey'
+    }, opts);
+    this.createRect(id, x, y, action, mergedOpts);
+    elem = this.createPath(id + "path", x, y, path, mergedOpts);
+    return this.addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
+  };
 
 
   /*
