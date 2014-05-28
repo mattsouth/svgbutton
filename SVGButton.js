@@ -2,7 +2,7 @@
 var SVGButton, root;
 
 SVGButton = (function() {
-  var merge, typeIsArray;
+  var addButtonBehaviours, addButtonBehavioursForId, merge, typeIsArray;
 
   function SVGButton(parent) {
     this.parent = parent;
@@ -59,18 +59,18 @@ SVGButton = (function() {
     return result;
   };
 
-  SVGButton.prototype.addButtonBehaviours = function(elem, hoverfill, unhoverfill, action) {
+  addButtonBehaviours = function(elem, hoverfill, unhoverfill, action) {
     return elem.attr("onmouseover", "this.style.fill='" + hoverfill + "'").attr("onmouseout", "this.style.fill='" + unhoverfill + "'").attr("onmouseup", action).attr("ontouchend", "this.style.fill='" + unhoverfill + "'");
   };
 
-  SVGButton.prototype.addButtonBehavioursForId = function(elem, id, hoverfill, unhoverfill, action) {
+  addButtonBehavioursForId = function(elem, id, hoverfill, unhoverfill, action) {
     return elem.attr("onmouseover", "d3.select('#" + id + "').style('fill','" + hoverfill + "')").attr("onmouseout", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')").attr("onmouseup", action).attr("ontouchend", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')");
   };
 
   SVGButton.prototype.createRect = function(id, x, y, action, opts) {
     var key, rect, val, _ref;
     rect = d3.select(this.parent).append("rect").attr("id", id).attr("x", x).attr("y", y);
-    this.addButtonBehaviours(rect, opts.hover, opts.rect.fill, action);
+    addButtonBehaviours(rect, opts.hover, opts.rect.fill, action);
     _ref = opts.rect;
     for (key in _ref) {
       val = _ref[key];
@@ -82,7 +82,7 @@ SVGButton = (function() {
   SVGButton.prototype.createText = function(id, x, y, text, action, opts) {
     var elem, key, val, _ref;
     elem = d3.select(this.parent).append("text").text(text).attr("id", id).attr("x", x).attr("y", y);
-    this.addButtonBehaviours(elem, opts.hover, opts.text.fill, action);
+    addButtonBehaviours(elem, opts.hover, opts.text.fill, action);
     _ref = opts.text;
     for (key in _ref) {
       val = _ref[key];
@@ -140,7 +140,7 @@ SVGButton = (function() {
     }, opts);
     this.createRect(id, x, y, action, mergedOpts);
     elem = this.createPath(id + "path", x, y, path, mergedOpts);
-    return this.addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
+    return addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
   };
 
 

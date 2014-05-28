@@ -24,13 +24,13 @@ class SVGButton
                 else result[key]=value
         result
 
-    addButtonBehaviours: (elem, hoverfill, unhoverfill, action) ->
+    addButtonBehaviours = (elem, hoverfill, unhoverfill, action) ->
         elem.attr("onmouseover","this.style.fill='#{hoverfill}'")
             .attr("onmouseout","this.style.fill='#{unhoverfill}'")
             .attr("onmouseup",action)
             .attr("ontouchend","this.style.fill='#{unhoverfill}'")
 
-    addButtonBehavioursForId: (elem, id, hoverfill, unhoverfill, action) ->
+    addButtonBehavioursForId = (elem, id, hoverfill, unhoverfill, action) ->
         elem.attr("onmouseover","d3.select('##{id}').style('fill','#{hoverfill}')")
             .attr("onmouseout","d3.select('##{id}').style('fill','#{unhoverfill}')")
             .attr("onmouseup",action)
@@ -39,14 +39,14 @@ class SVGButton
     createRect: (id, x, y, action, opts) ->
         rect = d3.select(@parent).append("rect")
             .attr("id", id).attr("x", x).attr("y", y)        
-        @addButtonBehaviours rect, opts.hover, opts.rect.fill, action
+        addButtonBehaviours rect, opts.hover, opts.rect.fill, action
         rect.attr(key, val) for key, val of opts.rect
         rect
 
     createText: (id, x, y, text, action, opts) ->
         elem = d3.select(@parent).append("text").text(text)
             .attr("id", id).attr("x", x).attr("y", y)        
-        @addButtonBehaviours elem, opts.hover, opts.text.fill, action
+        addButtonBehaviours elem, opts.hover, opts.text.fill, action
         for key, val of opts.text
             elem.attr(key, val) 
         elem
@@ -72,7 +72,7 @@ class SVGButton
         mergedOpts = merge {rect: @rectDefaults, path: @pathDefaults, hover: 'lightgrey'}, opts
         @createRect id, x, y, action, mergedOpts
         elem = @createPath id+"path", x, y, path, mergedOpts
-        @addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+        addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
 
     ###
     var generator = new SVGButtonMaker('track-canvas')
