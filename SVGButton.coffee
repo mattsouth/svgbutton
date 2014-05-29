@@ -3,9 +3,9 @@
 # hide as much complexity as possible but still keep it accessible
 class SVGButton
     constructor: (@parent) ->
-        @rectDefaults={width: 30, height: 30, rx: 5, ry: 5, 'stroke-width': 2, stroke: 'grey', fill: 'none'}
+        @rectDefaults={rx: 5, ry: 5, 'stroke-width': 2, stroke: 'grey', fill: 'none'}
         @textDefaults={stroke: 'grey', fill: 'none', 'font-family':'sans-serif',fill:'grey', 'font-size':14}
-        @pathDefaults={width: 30, height: 30, rx: 5, ry: 5, 'stroke-width': 2, stroke: 'grey', fill: 'none'}
+        @pathDefaults={'stroke-width': 2, stroke: 'grey', fill: 'none', d:''}
 
     # from http://coffeescriptcookbook.com/chapters/arrays/check-type-is-array
     typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
@@ -14,12 +14,16 @@ class SVGButton
     merge = (defaults, opts) ->
         result = {}
         for key, value of defaults
-            if value == Object(value) # test if value is an object
+            if typeIsArray value
+                result[key]=[]
+                for item, idx in value
+                    result[key].push merge(value[idx], opts[key][idx])
+            else if value == Object(value) # test if value is an object
                 if opts[key]?
                     result[key] = merge(value, opts[key])
                 else
                     result[key] = value
-            else 
+            else
                 if opts[key]? then result[key]=opts[key]
                 else result[key]=value
         result
@@ -38,7 +42,8 @@ class SVGButton
 
     createRect: (id, x, y, action, opts) ->
         rect = d3.select(@parent).append("rect")
-            .attr("id", id).attr("x", x).attr("y", y)        
+            .attr("id", id).attr("x", x).attr("y", y) 
+            .attr("width", opts.width).attr("height", opts.height)       
         addButtonBehaviours rect, opts.hover, opts.rect.fill, action
         rect.attr(key, val) for key, val of opts.rect
         rect
@@ -51,10 +56,11 @@ class SVGButton
             elem.attr(key, val) 
         elem
 
-    createPath: (id, x, y, path, opts) ->
+    createPath: (id, x, y, opts) ->
         elem = d3.select(@parent).append("path")
-            .attr("d",path).attr("transform","translate(#{x},#{y})").attr("id", id)
-        for key, val of opts.path
+            .attr("transform","translate(#{x},#{y})").attr("id", id)
+        console.log opts
+        for key, val of opts
             elem.attr(key, val)
         elem
 
@@ -65,14 +71,25 @@ class SVGButton
         # todo work out size of text element and draw rectangle around it
 
     makeButton: (id, x, y, action, opts={}) ->
-        mergedOpts = merge {rect: @rectDefaults, hover: 'lightgrey'}, opts
+        defaults = {width:30, height:30, hover: 'lightgrey', rect: @rectDefaults, text: @textDetaults}
+        if opts.path?
+            if typeIsArray opts.path
+                defaults.path = []
+                for instance in opts.path
+                    defaults.path.push @pathDefaults
+            else
+                defaults.path = @pathDefaults
+        mergedOpts = merge defaults, opts
         @createRect id, x, y, action, mergedOpts
-
-    makePathButton: (id, x, y, path, action, opts={}) ->
-        mergedOpts = merge {rect: @rectDefaults, path: @pathDefaults, hover: 'lightgrey'}, opts
-        @createRect id, x, y, action, mergedOpts
-        elem = @createPath id+"path", x, y, path, mergedOpts
-        addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+        if mergedOpts.path?
+            if typeIsArray mergedOpts.path
+                for instance, idx in mergedOpts.path
+                    elem = @createPath "#{id}path#{idx}", x, y, mergedOpts.path[idx] 
+                    addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+            else
+                elem = @createPath "#{id}path", x, y, mergedOpts.path
+                addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+        # todo: add text
 
     ###
     var generator = new SVGButtonMaker('track-canvas')

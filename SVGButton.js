@@ -7,8 +7,6 @@ SVGButton = (function() {
   function SVGButton(parent) {
     this.parent = parent;
     this.rectDefaults = {
-      width: 30,
-      height: 30,
       rx: 5,
       ry: 5,
       'stroke-width': 2,
@@ -23,13 +21,10 @@ SVGButton = (function() {
       'font-size': 14
     };
     this.pathDefaults = {
-      width: 30,
-      height: 30,
-      rx: 5,
-      ry: 5,
       'stroke-width': 2,
       stroke: 'grey',
-      fill: 'none'
+      fill: 'none',
+      d: ''
     };
   }
 
@@ -38,11 +33,17 @@ SVGButton = (function() {
   };
 
   merge = function(defaults, opts) {
-    var key, result, value;
+    var idx, item, key, result, value, _i, _len;
     result = {};
     for (key in defaults) {
       value = defaults[key];
-      if (value === Object(value)) {
+      if (typeIsArray(value)) {
+        result[key] = [];
+        for (idx = _i = 0, _len = value.length; _i < _len; idx = ++_i) {
+          item = value[idx];
+          result[key].push(merge(value[idx], opts[key][idx]));
+        }
+      } else if (value === Object(value)) {
         if (opts[key] != null) {
           result[key] = merge(value, opts[key]);
         } else {
@@ -69,7 +70,7 @@ SVGButton = (function() {
 
   SVGButton.prototype.createRect = function(id, x, y, action, opts) {
     var key, rect, val, _ref;
-    rect = d3.select(this.parent).append("rect").attr("id", id).attr("x", x).attr("y", y);
+    rect = d3.select(this.parent).append("rect").attr("id", id).attr("x", x).attr("y", y).attr("width", opts.width).attr("height", opts.height);
     addButtonBehaviours(rect, opts.hover, opts.rect.fill, action);
     _ref = opts.rect;
     for (key in _ref) {
@@ -91,12 +92,12 @@ SVGButton = (function() {
     return elem;
   };
 
-  SVGButton.prototype.createPath = function(id, x, y, path, opts) {
-    var elem, key, val, _ref;
-    elem = d3.select(this.parent).append("path").attr("d", path).attr("transform", "translate(" + x + "," + y + ")").attr("id", id);
-    _ref = opts.path;
-    for (key in _ref) {
-      val = _ref[key];
+  SVGButton.prototype.createPath = function(id, x, y, opts) {
+    var elem, key, val;
+    elem = d3.select(this.parent).append("path").attr("transform", "translate(" + x + "," + y + ")").attr("id", id);
+    console.log(opts);
+    for (key in opts) {
+      val = opts[key];
       elem.attr(key, val);
     }
     return elem;
@@ -117,30 +118,46 @@ SVGButton = (function() {
   };
 
   SVGButton.prototype.makeButton = function(id, x, y, action, opts) {
-    var mergedOpts;
+    var defaults, elem, idx, instance, mergedOpts, _i, _j, _len, _len1, _ref, _ref1, _results;
     if (opts == null) {
       opts = {};
     }
-    mergedOpts = merge({
+    defaults = {
+      width: 30,
+      height: 30,
+      hover: 'lightgrey',
       rect: this.rectDefaults,
-      hover: 'lightgrey'
-    }, opts);
-    return this.createRect(id, x, y, action, mergedOpts);
-  };
-
-  SVGButton.prototype.makePathButton = function(id, x, y, path, action, opts) {
-    var elem, mergedOpts;
-    if (opts == null) {
-      opts = {};
+      text: this.textDetaults
+    };
+    if (opts.path != null) {
+      if (typeIsArray(opts.path)) {
+        defaults.path = [];
+        _ref = opts.path;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          instance = _ref[_i];
+          defaults.path.push(this.pathDefaults);
+        }
+      } else {
+        defaults.path = this.pathDefaults;
+      }
     }
-    mergedOpts = merge({
-      rect: this.rectDefaults,
-      path: this.pathDefaults,
-      hover: 'lightgrey'
-    }, opts);
+    mergedOpts = merge(defaults, opts);
     this.createRect(id, x, y, action, mergedOpts);
-    elem = this.createPath(id + "path", x, y, path, mergedOpts);
-    return addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
+    if (mergedOpts.path != null) {
+      if (typeIsArray(mergedOpts.path)) {
+        _ref1 = mergedOpts.path;
+        _results = [];
+        for (idx = _j = 0, _len1 = _ref1.length; _j < _len1; idx = ++_j) {
+          instance = _ref1[idx];
+          elem = this.createPath("" + id + "path" + idx, x, y, mergedOpts.path[idx]);
+          _results.push(addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action));
+        }
+        return _results;
+      } else {
+        elem = this.createPath("" + id + "path", x, y, mergedOpts.path);
+        return addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
+      }
+    }
   };
 
 

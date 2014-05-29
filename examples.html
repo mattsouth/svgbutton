@@ -15,10 +15,20 @@
 	    </svg>
 		<script>
 			var generator = new SVGButton('#buttons');
-			generator.makeButton('simple0', 50, 80, "alert('hello!');");
-			generator.makeButton('simple1', 90, 80, "alert('hello!');", {rect: {fill: 'pink'}});
-			generator.makeButton('simple2', 130, 80, "alert('hello!');", {rect: {stroke: 'blue', rx: 0, ry: 0, fill: 'lightskyblue', width: 60}});
-			generator.makePathButton('go', 50, 150, 'M11 6 L21 15 L11 24 Z', "alert('go!');", {path: {fill:'grey'}})
+			// basic buttons
+			generator.makeButton('simple0', 50, 80, "alert('this is a default button.');");
+			generator.makeButton('simple1', 90, 80, "alert('this is a default button with some style changes.');", {rect: {fill: 'pink'}});
+			generator.makeButton('simple2', 130, 80, "alert('this is a default button with style and size changes.');", {rect: {stroke: 'blue', rx: 0, ry: 0, fill: 'lightskyblue'}, width: 60});
+			// path buttons
+			generator.makeButton('go', 50, 150, "alert('A button with a single path decoration');", {path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}});
+			generator.makeButton('restart', 90, 150, "alert('A button with a multiple path decorations');", {
+		        path: [
+		            { fill:'none', stroke:'grey', "stroke-width":5, d:'M23 16a 8 8 0 1 1 -8 -8' },
+		            { fill:'grey', d:'M15 4L21 9L15 14Z' }
+		        ]
+		    });
+		    // TODO: text buttons
+		    // TODO: stateful buttons
 		</script>
 	</body>
 </html>
