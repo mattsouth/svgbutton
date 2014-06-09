@@ -1,6 +1,9 @@
 # requires d3
 # goal: to create a simple library for generating svg buttons
-# hide as much complexity as possible but still keep it accessible
+# hide as much complexity as possible by providing sensible defaults 
+# but allow the svg elements to be fully manipulated
+root = exports ? window
+
 class SVGButton
     constructor: (@parent) ->
         @rectDefaults={rx: 5, ry: 5, 'stroke-width': 2, stroke: 'grey', fill: 'none'}
@@ -26,6 +29,7 @@ class SVGButton
             else
                 if opts[key]? then result[key]=opts[key]
                 else result[key]=value
+        result[key]=opts[key] for key in Object.keys(opts) when key not in Object.keys(defaults)        
         result
 
     addButtonBehaviours = (elem, hoverfill, unhoverfill, action) ->
@@ -59,7 +63,6 @@ class SVGButton
     createPath: (id, x, y, opts) ->
         elem = d3.select(@parent).append("path")
             .attr("transform","translate(#{x},#{y})").attr("id", id)
-        console.log opts
         for key, val of opts
             elem.attr(key, val)
         elem
@@ -68,9 +71,10 @@ class SVGButton
         mergedOpts = merge {rect: @rectDefaults, text: @textDefaults, hover: 'lightgrey'}, opts
         elem = @createText id+"text", x+2, y+2, text, action, mergedOpts
         console.log elem
-        # todo work out size of text element and draw rectangle around it
+        # todo: work out size of text element and draw rectangle around it
 
     makeButton: (id, x, y, action, opts={}) ->
+        console.log 'makebutton', id, x, y, action, opts
         defaults = {width:30, height:30, hover: 'lightgrey', rect: @rectDefaults, text: @textDetaults}
         if opts.path?
             if typeIsArray opts.path
@@ -80,6 +84,7 @@ class SVGButton
             else
                 defaults.path = @pathDefaults
         mergedOpts = merge defaults, opts
+        console.log 'mergedOpts',opts
         @createRect id, x, y, action, mergedOpts
         if mergedOpts.path?
             if typeIsArray mergedOpts.path
@@ -90,6 +95,19 @@ class SVGButton
                 elem = @createPath "#{id}path", x, y, mergedOpts.path
                 addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
         # todo: add text
+
+    # opts is an array of meta - one array element per state - including an extra action attribute
+    # first element of array assumed default state
+    makeStatefulButton: (id, x, y, opts={}) ->
+
+        if typeIsArray opts
+            root[id]=0 # set current state variable
+            for state, idx in opts
+                if idx!=0 then state.class='invisible'
+                state.action = "updateState('#{id}', #{opts.length}); " + state.action
+                @makeButton "#{id}#{idx}", x, y, state.action, state
+        else
+            console.log "expecting an array of opts containing opts for each state"
 
     ###
     var generator = new SVGButtonMaker('track-canvas')
@@ -105,5 +123,11 @@ class SVGButton
     });
     ###
 
-root = exports ? window
+
+updateState = (id, numstates) ->
+    d3.select("##{id}#{root[id]}").attr('class', 'invisible')
+    if root[id]==numstates then root[id]=0 else root[id]++
+    d3.select("##{id}#{root[id]}").attr('class', '')
+
+root.updateState = updateState
 root.SVGButton = SVGButton
