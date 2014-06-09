@@ -131,7 +131,6 @@ SVGButton = (function() {
     if (opts == null) {
       opts = {};
     }
-    console.log('makebutton', id, x, y, action, opts);
     defaults = {
       width: 30,
       height: 30,
@@ -152,7 +151,6 @@ SVGButton = (function() {
       }
     }
     mergedOpts = merge(defaults, opts);
-    console.log('mergedOpts', opts);
     this.createRect(id, x, y, action, mergedOpts);
     if (mergedOpts.path != null) {
       if (typeIsArray(mergedOpts.path)) {
@@ -171,55 +169,77 @@ SVGButton = (function() {
     }
   };
 
-  SVGButton.prototype.makeStatefulButton = function(id, x, y, opts) {
-    var idx, state, _i, _len, _results;
+  SVGButton.prototype.makeStatefulButton = function(id, x, y, states, opts) {
+    var clazz, defaults, elem, idx, instance, mergedOpts, mergedstate, pathidx, state, _i, _j, _len, _len1, _ref, _results;
     if (opts == null) {
       opts = {};
     }
-    if (typeIsArray(opts)) {
+    defaults = {
+      width: 30,
+      height: 30,
+      hover: 'lightgrey',
+      rect: this.rectDefaults
+    };
+    mergedOpts = merge(defaults, opts);
+    if (typeIsArray(states)) {
       root[id] = 0;
       _results = [];
-      for (idx = _i = 0, _len = opts.length; _i < _len; idx = ++_i) {
-        state = opts[idx];
-        if (idx !== 0) {
-          state["class"] = 'invisible';
+      for (idx = _i = 0, _len = states.length; _i < _len; idx = ++_i) {
+        state = states[idx];
+        state.action = ("updateState('" + id + "', " + states.length + ");") + state.action;
+        if (state.path != null) {
+          if (typeIsArray(state.path)) {
+            defaults.path = [];
+            _ref = state.path;
+            for (_j = 0, _len1 = _ref.length; _j < _len1; _j++) {
+              instance = _ref[_j];
+              defaults.path.push(this.pathDefaults);
+            }
+          } else {
+            defaults.path = this.pathDefaults;
+          }
         }
-        state.action = ("updateState('" + id + "', " + opts.length + "); ") + state.action;
-        _results.push(this.makeButton("" + id + idx, x, y, state.action, state));
+        mergedstate = merge(mergedOpts, state);
+        clazz = ("" + id + idx) + (idx === 0 ? '' : ' invisible');
+        mergedstate.rect["class"] = clazz;
+        this.createRect("" + id + idx, x, y, state.action, mergedstate);
+        if (typeIsArray(mergedstate.path)) {
+          _results.push((function() {
+            var _k, _len2, _ref1, _results1;
+            _ref1 = mergedstate.path;
+            _results1 = [];
+            for (pathidx = _k = 0, _len2 = _ref1.length; _k < _len2; pathidx = ++_k) {
+              instance = _ref1[pathidx];
+              mergedstate.path[idx]["class"] = clazz;
+              elem = this.createPath("" + id + idx + "path" + pathidx, x, y, mergedstate.path[idx]);
+              _results1.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.path.fill, mergedstate.action));
+            }
+            return _results1;
+          }).call(this));
+        } else {
+          mergedstate.path["class"] = clazz;
+          elem = this.createPath("" + id + idx + "path", x, y, mergedstate.path);
+          _results.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.path.fill, mergedstate.action));
+        }
       }
       return _results;
     } else {
-      return console.log("expecting an array of opts containing opts for each state");
+      return console.log("expecting an array of opts for multiple states");
     }
   };
-
-
-  /*
-  var generator = new SVGButtonMaker('track-canvas')
-  generator.makeStatefulButton('pause', svgbbox.width-90, svgbbox.height-45, [
-      { path:'L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', action:'startGenerator(track)' }
-      { path:'L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', action:'stopGenerator()' }
-  ]);
-  generator.makeButton('restart', svgbbox.width-45, svgbbox.height-45, 'track.clear()', {
-      path: [
-          { fill:'none', stroke:'grey', stroke-width:5, d:'M23 14a 8 8 0 1 1 -8 -8' },
-          { fill:'grey', d:'M15 2L21 7L15 12Z' }
-      ]
-  });
-   */
 
   return SVGButton;
 
 })();
 
 updateState = function(id, numstates) {
-  d3.select("#" + id + root[id]).attr('class', 'invisible');
-  if (root[id] === numstates) {
+  d3.selectAll("." + id + root[id]).classed('invisible', true);
+  if (root[id] === (numstates - 1)) {
     root[id] = 0;
   } else {
     root[id]++;
   }
-  return d3.select("#" + id + root[id]).attr('class', '');
+  return d3.selectAll("." + id + root[id]).classed('invisible', false);
 };
 
 root.updateState = updateState;

@@ -74,7 +74,6 @@ class SVGButton
         # todo: work out size of text element and draw rectangle around it
 
     makeButton: (id, x, y, action, opts={}) ->
-        console.log 'makebutton', id, x, y, action, opts
         defaults = {width:30, height:30, hover: 'lightgrey', rect: @rectDefaults, text: @textDetaults}
         if opts.path?
             if typeIsArray opts.path
@@ -84,7 +83,6 @@ class SVGButton
             else
                 defaults.path = @pathDefaults
         mergedOpts = merge defaults, opts
-        console.log 'mergedOpts',opts
         @createRect id, x, y, action, mergedOpts
         if mergedOpts.path?
             if typeIsArray mergedOpts.path
@@ -96,38 +94,43 @@ class SVGButton
                 addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
         # todo: add text
 
-    # opts is an array of meta - one array element per state - including an extra action attribute
+    # states is an array of meta - one array element per state - including an extra action attribute
+    # opts is common meta for all states
     # first element of array assumed default state
-    makeStatefulButton: (id, x, y, opts={}) ->
-
-        if typeIsArray opts
+    makeStatefulButton: (id, x, y, states, opts={}) ->
+        defaults = {width:30, height:30, hover: 'lightgrey', rect: @rectDefaults}
+        mergedOpts = merge defaults, opts     
+        if typeIsArray states
             root[id]=0 # set current state variable
-            for state, idx in opts
-                if idx!=0 then state.class='invisible'
-                state.action = "updateState('#{id}', #{opts.length}); " + state.action
-                @makeButton "#{id}#{idx}", x, y, state.action, state
+            for state, idx in states
+                state.action = "updateState('#{id}', #{states.length});" + state.action
+                if state.path?
+                    if typeIsArray state.path
+                        defaults.path = []
+                        for instance in state.path
+                            defaults.path.push @pathDefaults
+                    else
+                        defaults.path = @pathDefaults
+                mergedstate = merge mergedOpts, state
+                clazz = "#{id}#{idx}" + (if idx==0 then '' else ' invisible')
+                mergedstate.rect.class = clazz
+                @createRect "#{id}#{idx}", x, y, state.action, mergedstate
+                if typeIsArray mergedstate.path
+                    for instance, pathidx in mergedstate.path
+                        mergedstate.path[idx].class=clazz
+                        elem = @createPath "#{id}#{idx}path#{pathidx}", x, y, mergedstate.path[idx] 
+                        addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.path.fill, mergedstate.action
+                else
+                    mergedstate.path.class=clazz
+                    elem = @createPath "#{id}#{idx}path", x, y, mergedstate.path
+                    addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.path.fill, mergedstate.action
         else
-            console.log "expecting an array of opts containing opts for each state"
-
-    ###
-    var generator = new SVGButtonMaker('track-canvas')
-    generator.makeStatefulButton('pause', svgbbox.width-90, svgbbox.height-45, [
-        { path:'L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', action:'startGenerator(track)' }
-        { path:'L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', action:'stopGenerator()' }
-    ]);
-    generator.makeButton('restart', svgbbox.width-45, svgbbox.height-45, 'track.clear()', {
-        path: [
-            { fill:'none', stroke:'grey', stroke-width:5, d:'M23 14a 8 8 0 1 1 -8 -8' },
-            { fill:'grey', d:'M15 2L21 7L15 12Z' }
-        ]
-    });
-    ###
-
+            console.log "expecting an array of opts for multiple states"
 
 updateState = (id, numstates) ->
-    d3.select("##{id}#{root[id]}").attr('class', 'invisible')
-    if root[id]==numstates then root[id]=0 else root[id]++
-    d3.select("##{id}#{root[id]}").attr('class', '')
+    d3.selectAll(".#{id}#{root[id]}").classed 'invisible', true
+    if root[id]==(numstates-1) then root[id]=0 else root[id]++
+    d3.selectAll(".#{id}#{root[id]}").classed 'invisible', false
 
 root.updateState = updateState
 root.SVGButton = SVGButton
