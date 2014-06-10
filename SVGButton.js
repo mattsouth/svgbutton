@@ -71,17 +71,17 @@ SVGButton = (function() {
   };
 
   addButtonBehaviours = function(elem, hoverfill, unhoverfill, action) {
-    return elem.attr("onmouseover", "this.style.fill='" + hoverfill + "'").attr("onmouseout", "this.style.fill='" + unhoverfill + "'").attr("onmouseup", action).attr("ontouchend", "this.style.fill='" + unhoverfill + "'");
+    return elem.attr("onmouseover", "this.style.fill='" + hoverfill + "'").attr("onmouseout", "this.style.fill='" + unhoverfill + "'").attr("onmouseup", action);
   };
 
   addButtonBehavioursForId = function(elem, id, hoverfill, unhoverfill, action) {
-    return elem.attr("onmouseover", "d3.select('#" + id + "').style('fill','" + hoverfill + "')").attr("onmouseout", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')").attr("onmouseup", action).attr("ontouchend", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')");
+    return elem.attr("onmouseover", "d3.select('#" + id + "').style('fill','" + hoverfill + "')").attr("onmouseout", "d3.select('#" + id + "').style('fill','" + unhoverfill + "')").attr("onmouseup", action);
   };
 
   SVGButton.prototype.createRect = function(id, x, y, action, opts) {
     var key, rect, val, _ref;
     rect = d3.select(this.parent).append("rect").attr("id", id).attr("x", x).attr("y", y).attr("width", opts.width).attr("height", opts.height);
-    addButtonBehaviours(rect, opts.hover, opts.rect.fill, action);
+    addButtonBehavioursForId(rect, id, opts.hover, opts.rect.fill, action);
     _ref = opts.rect;
     for (key in _ref) {
       val = _ref[key];
@@ -93,7 +93,7 @@ SVGButton = (function() {
   SVGButton.prototype.createText = function(id, x, y, text, action, opts) {
     var elem, key, val, _ref;
     elem = d3.select(this.parent).append("text").text(text).attr("id", id).attr("x", x).attr("y", y);
-    addButtonBehaviours(elem, opts.hover, opts.text.fill, action);
+    addButtonBehavioursForId(elem, id, opts.hover, opts.text.fill, action);
     _ref = opts.text;
     for (key in _ref) {
       val = _ref[key];
@@ -159,12 +159,12 @@ SVGButton = (function() {
         for (idx = _j = 0, _len1 = _ref1.length; _j < _len1; idx = ++_j) {
           instance = _ref1[idx];
           elem = this.createPath("" + id + "path" + idx, x, y, mergedOpts.path[idx]);
-          _results.push(addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action));
+          _results.push(addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.rect.fill, action));
         }
         return _results;
       } else {
         elem = this.createPath("" + id + "path", x, y, mergedOpts.path);
-        return addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.path.fill, action);
+        return addButtonBehavioursForId(elem, id, mergedOpts.hover, mergedOpts.rect.fill, action);
       }
     }
   };
@@ -212,14 +212,14 @@ SVGButton = (function() {
               instance = _ref1[pathidx];
               mergedstate.path[idx]["class"] = clazz;
               elem = this.createPath("" + id + idx + "path" + pathidx, x, y, mergedstate.path[idx]);
-              _results1.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.path.fill, mergedstate.action));
+              _results1.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.rect.fill, mergedstate.action));
             }
             return _results1;
           }).call(this));
         } else {
           mergedstate.path["class"] = clazz;
           elem = this.createPath("" + id + idx + "path", x, y, mergedstate.path);
-          _results.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.path.fill, mergedstate.action));
+          _results.push(addButtonBehavioursForId(elem, "" + id + idx, mergedstate.hover, mergedstate.rect.fill, mergedstate.action));
         }
       }
       return _results;

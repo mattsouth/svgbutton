@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>SVGButton - examples</title>
-		<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-		<script type="text/javascript" src="SVGButton.js" charset="utf-8"></script>
-		<link type="text/css" rel="stylesheet" href="./svgbutton.css"/>
-		<style>
-			html, body { margin:0; padding:0; overflow:hidden }
-			svg { position:fixed; top:0; bottom:0; left:0; right:0 }
-		</style>
-	</head>
-	<body>
-	    <svg id="buttons" xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%">
-        	<text id="title" x="50" y="50" font-family="sans-serif" fill="grey" font-weight="bold" font-size="20">SVGButton examples</text>
-	    </svg>
-		<script>
-			var generator = new SVGButton('#buttons');
-			// basic buttons
-			generator.makeButton('simple0', 50, 80, "alert('this is a default button.');");
-			generator.makeButton('simple2', 90, 80, "alert('this is a button with style and size changes.');", {rect: {stroke: 'blue', 'stroke-width': 4, rx: 0, ry: 0, fill: 'lightskyblue'}, width: 60});
-			// path buttons
-			generator.makeButton('go', 50, 150, "alert('A button with a single path decoration');", {path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}});
-			generator.makeButton('restart', 90, 150, "alert('A button with a multiple path decorations');", {
-		        path: [
-		            { fill:'none', stroke:'grey', "stroke-width":5, d:'M23 16a 8 8 0 1 1 -8 -8' },
-		            { fill:'grey', d:'M15 4L21 9L15 14Z' }
-		        ]
-		    });
-		    // TODO: text buttons
-		    // stateful buttons
-		    generator.makeStatefulButton('pause', 50, 220, [
-		        { path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}, action:'alert("paused");' },
-		        { path: {d: 'M7 6L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', fill:'grey', 'stroke-width': 0}, action:'alert("started");' }
-		    ]);
-		</script>
-	</body>
+    <head>
+        <title>SVGButton - examples</title>
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="SVGButton.js" charset="utf-8"></script>
+        <link type="text/css" rel="stylesheet" href="./svgbutton.css"/>
+        <style>
+            html, body { margin:0; padding:0; overflow:hidden }
+            svg { position:fixed; top:0; bottom:0; left:0; right:0 }
+        </style>
+    </head>
+    <body>
+        <svg id="buttons" xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%">
+            <text id="title" x="50" y="50" font-family="sans-serif" fill="grey" font-weight="bold" font-size="20">SVGButton examples</text>
+        </svg>
+        <script>
+            var generator = new SVGButton('#buttons');
+            // basic buttons
+            generator.makeButton('default', 50, 80, "alert('this is a default button.');");
+            generator.makeButton('simple', 90, 80, "alert('this is a button with style and size changes.');", {rect: {stroke: 'blue', 'stroke-width': 4, rx: 0, ry: 0, fill: 'lightskyblue'}, width: 60});
+            // path buttons
+            generator.makeButton('go', 50, 150, "alert('A button with a single path decoration');", {path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}});
+            generator.makeButton('restart', 90, 150, "alert('A button with a multiple path decorations');", {
+                path: [
+                    { fill:'none', stroke:'grey', "stroke-width":5, d:'M23 16a 8 8 0 1 1 -8 -8' },
+                    { fill:'grey', d:'M15 4L21 9L15 14Z' }
+                ]
+            });
+            // TODO: text buttons
+            // stateful buttons
+            generator.makeStatefulButton('pause', 50, 220, [
+                { path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}, action:'alert("paused");' },
+                { path: {d: 'M7 6L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', fill:'grey', 'stroke-width': 0}, action:'alert("started");' }
+            ]);
+        </script>
+    </body>
 </html>

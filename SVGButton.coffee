@@ -36,26 +36,26 @@ class SVGButton
         elem.attr("onmouseover","this.style.fill='#{hoverfill}'")
             .attr("onmouseout","this.style.fill='#{unhoverfill}'")
             .attr("onmouseup",action)
-            .attr("ontouchend","this.style.fill='#{unhoverfill}'")
+            #.attr("ontouchend","this.style.fill='#{unhoverfill}'")
 
     addButtonBehavioursForId = (elem, id, hoverfill, unhoverfill, action) ->
         elem.attr("onmouseover","d3.select('##{id}').style('fill','#{hoverfill}')")
             .attr("onmouseout","d3.select('##{id}').style('fill','#{unhoverfill}')")
             .attr("onmouseup",action)
-            .attr("ontouchend","d3.select('##{id}').style('fill','#{unhoverfill}')")
+            #.attr("ontouchend","d3.select('##{id}').style('fill','#{unhoverfill}')")
 
     createRect: (id, x, y, action, opts) ->
         rect = d3.select(@parent).append("rect")
             .attr("id", id).attr("x", x).attr("y", y) 
             .attr("width", opts.width).attr("height", opts.height)       
-        addButtonBehaviours rect, opts.hover, opts.rect.fill, action
+        addButtonBehavioursForId rect, id, opts.hover, opts.rect.fill, action
         rect.attr(key, val) for key, val of opts.rect
         rect
 
     createText: (id, x, y, text, action, opts) ->
         elem = d3.select(@parent).append("text").text(text)
             .attr("id", id).attr("x", x).attr("y", y)        
-        addButtonBehaviours elem, opts.hover, opts.text.fill, action
+        addButtonBehavioursForId elem, id, opts.hover, opts.text.fill, action
         for key, val of opts.text
             elem.attr(key, val) 
         elem
@@ -88,10 +88,10 @@ class SVGButton
             if typeIsArray mergedOpts.path
                 for instance, idx in mergedOpts.path
                     elem = @createPath "#{id}path#{idx}", x, y, mergedOpts.path[idx] 
-                    addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+                    addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.rect.fill, action
             else
                 elem = @createPath "#{id}path", x, y, mergedOpts.path
-                addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.path.fill, action
+                addButtonBehavioursForId elem, id, mergedOpts.hover, mergedOpts.rect.fill, action
         # todo: add text
 
     # states is an array of meta - one array element per state - including an extra action attribute
@@ -119,11 +119,11 @@ class SVGButton
                     for instance, pathidx in mergedstate.path
                         mergedstate.path[idx].class=clazz
                         elem = @createPath "#{id}#{idx}path#{pathidx}", x, y, mergedstate.path[idx] 
-                        addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.path.fill, mergedstate.action
+                        addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.rect.fill, mergedstate.action
                 else
                     mergedstate.path.class=clazz
                     elem = @createPath "#{id}#{idx}path", x, y, mergedstate.path
-                    addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.path.fill, mergedstate.action
+                    addButtonBehavioursForId elem, "#{id}#{idx}", mergedstate.hover, mergedstate.rect.fill, mergedstate.action
         else
             console.log "expecting an array of opts for multiple states"
 
