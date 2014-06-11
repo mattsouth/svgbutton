@@ -1,7 +1,7 @@
-# requires d3
 # goal: to create a simple library for generating svg buttons
 # hide as much complexity as possible by providing sensible defaults 
-# but allow the svg elements to be fully manipulated
+# but allow the generated svg elements to be fully manipulated
+# requires d3
 root = exports ? window
 
 class SVGButton
@@ -32,17 +32,13 @@ class SVGButton
         result[key]=opts[key] for key in Object.keys(opts) when key not in Object.keys(defaults)        
         result
 
-    addButtonBehaviours = (elem, hoverfill, unhoverfill, action) ->
-        elem.attr("onmouseover","this.style.fill='#{hoverfill}'")
-            .attr("onmouseout","this.style.fill='#{unhoverfill}'")
-            .attr("onmouseup",action)
-            #.attr("ontouchend","this.style.fill='#{unhoverfill}'")
-
     addButtonBehavioursForId = (elem, id, hoverfill, unhoverfill, action) ->
         elem.attr("onmouseover","d3.select('##{id}').style('fill','#{hoverfill}')")
             .attr("onmouseout","d3.select('##{id}').style('fill','#{unhoverfill}')")
             .attr("onmouseup",action)
-            #.attr("ontouchend","d3.select('##{id}').style('fill','#{unhoverfill}')")
+            .attr("ontouchstart","d3.select('##{id}').style('fill','#{hoverfill}')")
+            .attr("ontouchend","d3.select('##{id}').style('fill','#{unhoverfill}')")
+            .attr("ontouchleave","d3.select('##{id}').style('fill','#{unhoverfill}')")
 
     createRect: (id, x, y, action, opts) ->
         rect = d3.select(@parent).append("rect")
@@ -103,7 +99,7 @@ class SVGButton
         if typeIsArray states
             root[id]=0 # set current state variable
             for state, idx in states
-                state.action = "updateState('#{id}', #{states.length});" + state.action
+                state.action = "updateButtonState('#{id}', #{states.length});" + state.action
                 if state.path?
                     if typeIsArray state.path
                         defaults.path = []
@@ -127,10 +123,10 @@ class SVGButton
         else
             console.log "expecting an array of opts for multiple states"
 
-updateState = (id, numstates) ->
+updateButtonState = (id, numstates) ->
     d3.selectAll(".#{id}#{root[id]}").classed 'invisible', true
     if root[id]==(numstates-1) then root[id]=0 else root[id]++
     d3.selectAll(".#{id}#{root[id]}").classed 'invisible', false
 
-root.updateState = updateState
+root.updateButtonState = updateButtonState
 root.SVGButton = SVGButton
