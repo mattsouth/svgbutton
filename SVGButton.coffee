@@ -4,32 +4,35 @@
 # requires d3
 root = exports ? window
 
+# from http://coffeescriptcookbook.com/chapters/arrays/check-type-is-array
+typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
+
+clone = (obj) ->
+    JSON.parse JSON.stringify(obj)
+
 class SVGButton
     constructor: (@parent) ->
         @rectDefaults={rx: 5, ry: 5, 'stroke-width': 2, stroke: 'grey', fill: 'none'}
         @textDefaults={stroke: 'grey', fill: 'none', 'font-family':'sans-serif',fill:'grey', 'font-size':14}
         @pathDefaults={'stroke-width': 2, stroke: 'grey', fill: 'none', d:''}
 
-    # from http://coffeescriptcookbook.com/chapters/arrays/check-type-is-array
-    typeIsArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
-
     # allow opts to override provided default opts
     merge = (defaults, opts) ->
         result = {}
-        for key, value of defaults
+        for key, value of clone(defaults)
             if typeIsArray value
                 result[key]=[]
                 for item, idx in value
-                    result[key].push merge(value[idx], opts[key][idx])
+                    result[key].push merge(value[idx], clone(opts[key][idx]))
             else if value == Object(value) # test if value is an object
                 if opts[key]?
-                    result[key] = merge(value, opts[key])
+                    result[key] = merge(value, clone(opts[key]))
                 else
                     result[key] = value
             else
-                if opts[key]? then result[key]=opts[key]
+                if opts[key]? then result[key]=clone(opts[key])
                 else result[key]=value
-        result[key]=opts[key] for key in Object.keys(opts) when key not in Object.keys(defaults)        
+        result[key]=clone(opts[key]) for key in Object.keys(opts) when key not in Object.keys(defaults)        
         result
 
     addButtonBehavioursForId = (elem, id, hoverfill, unhoverfill, action) ->
@@ -102,9 +105,9 @@ class SVGButton
                 state.action = "updateButtonState('#{id}', #{states.length});" + state.action
                 if state.path?
                     if typeIsArray state.path
-                        defaults.path = []
+                        mergedOpts.path = []
                         for instance in state.path
-                            defaults.path.push @pathDefaults
+                            mergedOpts.path.push @pathDefaults
                     else
                         defaults.path = @pathDefaults
                 mergedstate = merge mergedOpts, state

@@ -19,6 +19,12 @@
             // basic buttons
             generator.makeButton('default', 50, 80, "alert('this is a default button.');");
             generator.makeButton('simple', 90, 80, "alert('this is a button with style and size changes.');", {rect: {stroke: 'blue', 'stroke-width': 4, rx: 0, ry: 0, fill: 'lightskyblue'}, width: 60});
+            // TODO: text buttons
+            // stateful buttons
+            generator.makeStatefulButton('pause', 240, 80, [
+                { path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}, action:'alert("a two state button: started");' },
+                { path: {d: 'M7 6L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', fill:'grey', 'stroke-width': 0}, action:'alert("a two state button: paused");' }
+            ]);
             // path buttons
             generator.makeButton('go', 160, 80, "alert('A button with a single path decoration');", {path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}});
             generator.makeButton('restart', 200, 80, "alert('A button with a multiple path decorations');", {
@@ -27,12 +33,6 @@
                     { fill:'grey', d:'M15 4L21 9L15 14Z' }
                 ]
             });
-            // TODO: text buttons
-            // stateful buttons
-            generator.makeStatefulButton('pause', 240, 80, [
-                { path: {d: 'M11 6 L21 15 L11 24 Z', fill:'grey'}, action:'alert("a two state button: started");' },
-                { path: {d: 'M7 6L7 24 L13 24 L13 6 L7 6 M17 6 L17 24 L23 24 L23 6 L17 6', fill:'grey', 'stroke-width': 0}, action:'alert("a two state button: paused");' }
-            ]);
         </script>
     </body>
 </html>
